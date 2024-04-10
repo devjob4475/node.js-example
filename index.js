@@ -1,20 +1,13 @@
-const express = require("express");
-const app = express();
-const User = require("./models/User");
+const express = require("express")
+const app = express()
 
-app.use(express.json());
+require('dotenv').config()
 
-app.post("/users", async (req, res) => {
-  try {
-    const { email, firstname, lastname } = req.body;
-    const newUser = await User.create({ email, firstname, lastname });
-    res.status(201).json(newUser);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to create user." });
-  }
-});
+app.use(express.json())
 
-app.listen(3000, () => console.log("Server ready on port 3000."));
 
-module.exports = app;
+const bookRouter = require('./routes/book.router')
+
+app.use("/api/v1/books", bookRouter)
+
+app.listen(process.env.PORT, () => console.log(`Server is running on port ${process.env.PORT}`))

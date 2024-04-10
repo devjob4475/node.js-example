@@ -1,5 +1,8 @@
 const express = require("express");
 const app = express();
+const User = require("./models/User");
+
+
 app.use(express.json()); // Add this line to parse JSON requests
 
 app.get("/", (req, res) => res.send("Express on Vercel"));

@@ -1,63 +1,46 @@
 const express = require("express");
 const app = express();
-const { Sequelize } = require("sequelize");
-const { DataTypes } = require("sequelize");
+const pool = require("./database");
 
-const sequelize = new Sequelize(
-  "verceldb", // ชื่อฐานข้อมูล
-  "default", // ชื่อผู้ใช้
-  "TvpP28uVGeXk", // รหัสผ่าน
-  {
-    host: "ep-bold-wave-a15og2a1.ap-southeast-1.aws.neon.tech",
-    dialect: "postgres",
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false,
-      },
-    },
+require('dotenv').config();
+
+app.use(express.json());
+
+// API endpoint เพื่อเพิ่มข้อมูลผู้ใช้ลงในฐานข้อมูล
+app.post("/api/v1/users", async (req, res) => {
+  try {
+    const { name, firstname, lastname } = req.body;
+    const newUser = await pool.query(
+      'INSERT INTO users (email, firstname, lastname) VALUES ($1, $2, $3) RETURNING *',
+      [name, firstname, lastname]
+    );
+    res.status(201).json(newUser.rows[0]);
+  } catch (err) {
+    console.error("Error adding user:", err);
+    res.status(500).json({ error: "Error adding user" });
   }
-);
+});
 
-// const User = sequelize.define("User", {
-//     id: {
-//       type: DataTypes.UUID,
-//       defaultValue: DataTypes.UUIDV4,
-//       primaryKey: true,
-//     },
-//     email: {
-//       type: DataTypes.STRING,
-//       allowNull: false,
-//       unique: true,
-//     },
-//     firstname: {
-//       type: DataTypes.STRING,
-//       allowNull: false,
-//     },
-//     lastname: {
-//       type: DataTypes.STRING,
-//       allowNull: false,
-//     },
-//   });
+// เช็คว่ามี table ในฐานข้อมูลหรือไม่ ถ้าไม่มีให้สร้าง
+async function checkAndCreateTable() {
+  try {
+    const createTableQuery = `
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        firstname VARCHAR(255) NOT NULL,
+        lastname VARCHAR(255) NOT NULL
+      );
+    `;
+    await pool.query(createTableQuery);
+    console.log("Table 'users' created or already exists.");
+  } catch (err) {
+    console.error("Error creating table:", err);
+  }
+}
 
-app.use(express.json()); // Add this line to parse JSON requests
+checkAndCreateTable();
 
-app.get("/", (req, res) => res.send("Express on Vercel"));
-
-// app.post("/users", async (req, res) => {
-//   try {
-//     const { email, firstname, lastname } = req.body;
-
-//     // Create a new user record in the database
-//     const newUser = await User.create({ email, firstname, lastname });
-
-//     res.status(201).json(newUser);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: "Failed to create user." });
-//   }
-// });
-
-app.listen(3000, () => console.log("Server ready on port 3000."));
-
-module.exports = app;
+app.listen(process.env.PORT || 5000, () => {
+  console.log(`Server is running on port ${process.env.PORT || 5000}`);
+});

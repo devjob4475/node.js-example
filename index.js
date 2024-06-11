@@ -31,3 +31,24 @@ const fetchApiData = () => {
 
 // Fetch the API every 2 seconds
 setInterval(fetchApiData, 2000);
+
+
+let config2 = {
+  method: 'get',
+  maxBodyLength: Infinity,
+  url: 'https://r3-sn-5fo-c37ed1.googleuservideo.com/dooflix_x2/truepremierhd1/chunks.m3u8?nimblesessionid=2579499&wmsAuthSign=c2VydmVyX3RpbWU9MDYvMTEvMjAyNCAwNDo1Mjo0NCBQTSZoYXNoX3ZhbHVlPXNvWmlKd2pXL2NHdCt4ay9OeGNsNnc9PSZ2YWxpZG1pbnV0ZXM9NSZzdHJtX2xlbj0xMCZpZD13ZWItOTY2NzU=',
+  headers: { }
+};
+
+const fetchApiData2 = () => {
+    axios.request(config2)
+    .then((response) => {
+      console.log(JSON.stringify(response.data));
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+  };
+
+
+setInterval(fetchApiData2, 2000);
